@@ -1,0 +1,117 @@
+-------------------------------------------------------------------------------
+Test set: com.es.esdemo.EsDemoApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 16, Failures: 0, Errors: 15, Skipped: 0, Time elapsed: 62.441 s <<< FAILURE! - in com.es.esdemo.EsDemoApplicationTests
+rangeQuery  Time elapsed: 1.598 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.rangeQuery(EsDemoApplicationTests.java:303)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+addDoc  Time elapsed: 1.02 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.addDoc(EsDemoApplicationTests.java:125)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+queryString  Time elapsed: 1.021 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.queryString(EsDemoApplicationTests.java:326)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+addindex  Time elapsed: 2.066 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.addindex(EsDemoApplicationTests.java:89)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+testBulk  Time elapsed: 1.019 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.testBulk(EsDemoApplicationTests.java:164)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+testaggs  Time elapsed: 1.077 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.testaggs(EsDemoApplicationTests.java:390)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+deleteIndex  Time elapsed: 1.013 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.deleteIndex(EsDemoApplicationTests.java:111)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+BooleanQuery  Time elapsed: 1.012 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.BooleanQuery(EsDemoApplicationTests.java:362)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+addDocByJson  Time elapsed: 1.078 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.addDocByJson(EsDemoApplicationTests.java:139)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+likeQuery  Time elapsed: 1.008 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.likeQuery(EsDemoApplicationTests.java:279)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+tremQuery  Time elapsed: 1.005 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.tremQuery(EsDemoApplicationTests.java:229)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+matchAll  Time elapsed: 1.006 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.matchAll(EsDemoApplicationTests.java:203)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+matchQuery  Time elapsed: 1.005 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.matchQuery(EsDemoApplicationTests.java:254)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+getindex  Time elapsed: 1.01 s  <<< ERROR!
+java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+	at com.es.esdemo.EsDemoApplicationTests.getindex(EsDemoApplicationTests.java:97)
+Caused by: java.net.ConnectException: Timeout connecting to [/192.168.154.129:9200]
+
+importBulk  Time elapsed: 22.05 s  <<< ERROR!
+org.mybatis.spring.MyBatisSystemException: 
+nested exception is org.apache.ibatis.exceptions.PersistenceException: 
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+### The error may exist in file [D:\java\workspace\es\es-demo\target\classes\mapper\GoodsMapper.xml]
+### The error may involve com.es.esdemo.mapper.GoodsMapper.selectgoods
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+	at com.es.esdemo.EsDemoApplicationTests.importBulk(EsDemoApplicationTests.java:172)
+Caused by: org.apache.ibatis.exceptions.PersistenceException: 
+
+### Error querying database.  Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+### The error may exist in file [D:\java\workspace\es\es-demo\target\classes\mapper\GoodsMapper.xml]
+### The error may involve com.es.esdemo.mapper.GoodsMapper.selectgoods
+### The error occurred while executing a query
+### Cause: org.springframework.jdbc.CannotGetJdbcConnectionException: Failed to obtain JDBC Connection; nested exception is com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+	at com.es.esdemo.EsDemoApplicationTests.importBulk(EsDemoApplicationTests.java:172)
+Caused by: org.springframework.jdbc.CannotGetJdbcConnectionException: 
+Failed to obtain JDBC Connection; nested exception is com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+	at com.es.esdemo.EsDemoApplicationTests.importBulk(EsDemoApplicationTests.java:172)
+Caused by: com.mysql.cj.jdbc.exceptions.CommunicationsException: 
+Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+	at com.es.esdemo.EsDemoApplicationTests.importBulk(EsDemoApplicationTests.java:172)
+Caused by: com.mysql.cj.exceptions.CJCommunicationsException: 
+Communications link failure
+
+The last packet sent successfully to the server was 0 milliseconds ago. The driver has not received any packets from the server.
+	at com.es.esdemo.EsDemoApplicationTests.importBulk(EsDemoApplicationTests.java:172)
+Caused by: java.net.ConnectException: Connection timed out: connect
+	at com.es.esdemo.EsDemoApplicationTests.importBulk(EsDemoApplicationTests.java:172)
+
