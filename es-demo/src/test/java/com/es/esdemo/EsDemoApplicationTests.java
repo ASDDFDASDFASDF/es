@@ -23,8 +23,14 @@ import org.elasticsearch.client.*;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.RandomScoreFunctionBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.index.query.functionscore.WeightBuilder;
+import org.elasticsearch.script.Script;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -33,6 +39,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -282,6 +289,96 @@ class EsDemoApplicationTests {
             System.out.println(goods.toString());
         }
     }
+
+
+    private static void functionScore(RestHighLevelClient client) throws IOException {
+        SearchRequest searchRequest = new SearchRequest("blogs");
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+
+        //function1
+        RandomScoreFunctionBuilder randomScoreFunctionBuilder = ScoreFunctionBuilders.randomFunction().seed(10).setField("_seq_no").setWeight(23);
+        TermQueryBuilder termQueryBuilder1 = new TermQueryBuilder("post_date", "2020-01-01");
+        FunctionScoreQueryBuilder.FilterFunctionBuilder filterFunctionBuilder = new FunctionScoreQueryBuilder.FilterFunctionBuilder(termQueryBuilder1, randomScoreFunctionBuilder);
+
+        //function2
+        TermQueryBuilder termQueryBuilder2 = new TermQueryBuilder("author_id", 11402);
+        WeightBuilder weightBuilder = ScoreFunctionBuilders.weightFactorFunction(42);
+        FunctionScoreQueryBuilder.FilterFunctionBuilder filterFunctionBuilder2 = new FunctionScoreQueryBuilder.FilterFunctionBuilder(termQueryBuilder2, weightBuilder);
+
+        //query and functions
+        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("content", "rabbits");
+        FunctionScoreQueryBuilder.FilterFunctionBuilder[] filterFunctionBuilders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[]{filterFunctionBuilder, filterFunctionBuilder2};
+
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(matchQueryBuilder, filterFunctionBuilders);
+        functionScoreQueryBuilder.boost(5);
+        functionScoreQueryBuilder.scoreMode(org.elasticsearch.common.lucene.search.function.FunctionScoreQuery.ScoreMode.MULTIPLY);
+        functionScoreQueryBuilder.boostMode(CombineFunction.MULTIPLY);
+        functionScoreQueryBuilder.setMinScore(42);
+        functionScoreQueryBuilder.maxBoost(42);
+
+        searchSourceBuilder.query(functionScoreQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        SearchHit[] hits = searchResponse.getHits().getHits();
+        for (SearchHit hit : hits) {
+            System.out.println(hit.getSourceAsString());
+        }
+    }
+
+
+    //多条件排序
+    @Test
+    public void sortQuery() throws IOException {
+
+        FunctionScoreQueryBuilder.FilterFunctionBuilder[] filterFunctionBuilders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[]{
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "time_doptimal").boost(5), ScoreFunctionBuilders.weightFactorFunction(70)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "APP").boost(3), ScoreFunctionBuilders.weightFactorFunction(4)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "new_product").boost(4), ScoreFunctionBuilders.weightFactorFunction(16)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "concessional_rate").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
+                  new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "EXTENDED SIZE").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
+                  new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "revision").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
+                  new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "pickUp"), ScoreFunctionBuilders.weightFactorFunction(1))
+        };
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQuery.must(QueryBuilders.termQuery("num.keyword", "true"));
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(boolQuery, filterFunctionBuilders);
+        searchSourceBuilder.query(functionScoreQueryBuilder)
+                  .sort("_score",SortOrder.DESC);
+//                  .sort("identity.keyword",SortOrder.DESC);
+        searchSourceBuilder.explain(true);
+        SearchRequest searchRequest = new SearchRequest("my_test");
+        searchRequest.source(searchSourceBuilder);
+        searchSourceBuilder.from(1);
+        searchSourceBuilder.size(30);
+
+        SearchResponse search = client.search(searchRequest, RequestOptions.DEFAULT);
+        SearchHit[] hits = search.getHits().getHits();
+        for (int i = 0; i < hits.length; i++) {
+            String source = hits[i].getSourceAsString();
+            System.out.println(source.toString()+":_score:"+hits[i].getScore());
+        }
+
+        System.out.println(functionScoreQueryBuilder.toString());
+
+
+//        SearchRequest searchRequest = new SearchRequest("my_test");
+//        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+//        TermQueryBuilder termQuery = QueryBuilders.termQuery("num", "true");
+//        searchSourceBuilder.query(termQuery);
+//        searchSourceBuilder.sort("identity");
+//        searchRequest.source(searchSourceBuilder);
+//        SearchResponse search = client.search(searchRequest, RequestOptions.DEFAULT);
+//        System.out.println(search.getHits().getTotalHits().value);
+//        SearchHit[] hits = search.getHits().getHits();
+//        for (int i = 0; i < hits.length; i++) {
+//            String source = hits[i].getSourceAsString();
+//            System.out.println(source.toString());
+//        }
+    }
+
 
     //范围查询
     @Test
