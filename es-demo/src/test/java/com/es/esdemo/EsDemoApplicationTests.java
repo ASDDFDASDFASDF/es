@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.es.esdemo.mapper.GoodsMapper;
 import com.es.esdemo.pojo.Goods;
 import com.es.esdemo.pojo.Person;
+import com.es.esdemo.pojo.ScriptTest;
 import org.apache.http.HttpHost;
 import org.assertj.core.data.Index;
 import org.elasticsearch.action.DocWriteRequest;
@@ -31,6 +32,7 @@ import org.elasticsearch.index.query.functionscore.RandomScoreFunctionBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.index.query.functionscore.WeightBuilder;
 import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -39,7 +41,9 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.ScriptSortBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +101,7 @@ class EsDemoApplicationTests {
     @Test
     public void getindex() throws IOException {
         IndicesClient indices = client.indices();
-        GetIndexRequest index = new GetIndexRequest("heima");
+        GetIndexRequest index = new GetIndexRequest("my_test");
         boolean exists = indices.exists(index, RequestOptions.DEFAULT);
         GetIndexResponse response = indices.get(index, RequestOptions.DEFAULT);
 
@@ -242,6 +246,36 @@ class EsDemoApplicationTests {
     }
 
     /**
+     * script排序
+     */
+    @Test
+    public void ScriptBySort() throws IOException {
+
+        SearchRequest searchRequest = new SearchRequest("my_test");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("num", "true");
+        searchSourceBuilder.query(matchQueryBuilder);
+        Map<String, Object> params = new HashMap<>();
+        params.put("keyword", "xx");
+        String inlineScript = "if(doc['identity.keyword'].value.contains(params.keyword))return 100000; return 0;";
+        Script script = new Script(ScriptType.INLINE,"painless",inlineScript,params);
+        ScriptSortBuilder script5 = SortBuilders.scriptSort(script, ScriptSortBuilder.ScriptSortType.NUMBER).order(SortOrder.DESC);
+        searchSourceBuilder.sort(script5);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse search = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println(search.getHits().getTotalHits().value);
+
+
+        SearchHit[] hits = search.getHits().getHits();
+        for (int i = 0; i < hits.length; i++) {
+            String source = hits[i].getSourceAsString();
+            ScriptTest goods = JSON.parseObject(source, ScriptTest.class);
+            System.out.println(goods.toString());
+        }
+    }
+
+    /**
      * match 查询
      * 会对查询条件进行分词
      * 将分词后的查询条件进行查询
@@ -250,9 +284,9 @@ class EsDemoApplicationTests {
      */
     @Test
     public void matchQuery() throws IOException {
-        SearchRequest searchRequest = new SearchRequest("goods");
+        SearchRequest searchRequest = new SearchRequest("my_test");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("title", "小米手机");
+        MatchQueryBuilder matchQueryBuilder = QueryBuilders.matchQuery("num", "true");
         searchSourceBuilder.query(matchQueryBuilder);
         searchRequest.source(searchSourceBuilder);
         SearchResponse search = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -332,14 +366,18 @@ class EsDemoApplicationTests {
     @Test
     public void sortQuery() throws IOException {
 
+
         FunctionScoreQueryBuilder.FilterFunctionBuilder[] filterFunctionBuilders = new FunctionScoreQueryBuilder.FilterFunctionBuilder[]{
-              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "time_doptimal").boost(5), ScoreFunctionBuilders.weightFactorFunction(70)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "time_doptimal").boost(70), ScoreFunctionBuilders.weightFactorFunction(70)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "new_product").boost(16), ScoreFunctionBuilders.weightFactorFunction(16)),
               new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "APP").boost(3), ScoreFunctionBuilders.weightFactorFunction(4)),
-              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "new_product").boost(4), ScoreFunctionBuilders.weightFactorFunction(16)),
-              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "concessional_rate").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
-                  new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "EXTENDED SIZE").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
-                  new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "revision").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
-                  new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "pickUp"), ScoreFunctionBuilders.weightFactorFunction(1))
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "UNISEX").boost(3), ScoreFunctionBuilders.weightFactorFunction(3)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "SET").boost(3), ScoreFunctionBuilders.weightFactorFunction(3)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "SUPERLARGE").boost(3), ScoreFunctionBuilders.weightFactorFunction(3)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "EXTENDED SIZE").boost(3), ScoreFunctionBuilders.weightFactorFunction(3)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "ONLINE SPECIAL").boost(3), ScoreFunctionBuilders.weightFactorFunction(3)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "pickUp").boost(2), ScoreFunctionBuilders.weightFactorFunction(2)),
+              new FunctionScoreQueryBuilder.FilterFunctionBuilder(QueryBuilders.matchQuery("identity", "concessional_rate").boost(1), ScoreFunctionBuilders.weightFactorFunction(1))
         };
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
